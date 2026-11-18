@@ -17,6 +17,9 @@ def transaction(identifier: str, amount: float, updated_at: str) -> Transaction:
 
 
 class MergeTests(unittest.TestCase):
+    def test_empty_sources_produce_empty_result(self):
+        self.assertEqual(merge_transactions([], []), [])
+
     def test_merge_keeps_unique_records(self):
         merged = merge_transactions(
             [transaction("local", 100, "2026-01-01T00:00:00+00:00")],
@@ -30,6 +33,13 @@ class MergeTests(unittest.TestCase):
             [transaction("same", 250, "2026-01-02T00:00:00+00:00")],
         )
         self.assertEqual(merged[0].amount, 250)
+
+    def test_local_record_wins_when_it_is_newer(self):
+        merged = merge_transactions(
+            [transaction("same", 300, "2026-01-03T00:00:00+00:00")],
+            [transaction("same", 250, "2026-01-02T00:00:00+00:00")],
+        )
+        self.assertEqual(merged[0].amount, 300)
 
 
 if __name__ == "__main__":
